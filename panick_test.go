@@ -40,7 +40,7 @@ func TestPanicked_nil(t *testing.T) {
 	panic(nil)
 }
 
-func TestPaniced(t *testing.T) {
+func TestPanicked(t *testing.T) {
 	ok := false
 	if panick.Panicked() {
 		t.Fatal("it shouldn't panicked")

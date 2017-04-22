@@ -1,2 +1,3 @@
-go_asm.h
-go_tls.h
+internal/HEAD/go_asm.h
+internal/HEAD/go_tls.h
+HEAD.go

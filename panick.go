@@ -1,35 +1,51 @@
 package panick
 
+import (
+	"runtime"
+
+	"github.com/t-yuki/panick/internal"
+	_ "github.com/t-yuki/panick/internal/go1.8"
+	_ "github.com/t-yuki/panick/internal/go1.8.1"
+)
+
 //go:generate sh gen.sh $GOROOT
 
 type Panic struct {
-	p uintptr
+	t iface.Panic
 }
 
 func Observe() (*Panic, bool) {
-	p := ptrPanic()
-	if p == uintptr(0) {
-		return nil, false
+	get, ok := iface.GetPanic[runtime.Version()]
+	if !ok {
+		get, ok = iface.GetPanic["HEAD"]
+		if !ok {
+			panic("unsupported runtime:" + runtime.Version())
+		}
 	}
-	return &Panic{p: p}, true
+
+	t := get()
+	if t != nil {
+		return &Panic{t: t}, true
+	}
+	return nil, false
 }
 
 func (p Panic) Recovered() bool {
-	return ptrPanicRecovered(p.p)
+	return p.t.Recovered()
 }
 
 func (p Panic) Aborted() bool {
-	return ptrPanicAborted(p.p)
+	return p.t.Aborted()
 }
 
 func (p Panic) Arg() interface{} {
-	return ptrPanicArg(p.p)
+	return p.t.Arg()
 }
 
 func (p Panic) Link() *Panic {
-	p2 := ptrPanicLink(p.p)
-	if p2 != uintptr(0) {
-		return &Panic{p: p2}
+	t := p.t.Link()
+	if t != nil {
+		return &Panic{t: t}
 	}
 	return nil
 }
@@ -38,9 +54,3 @@ func Panicked() bool {
 	p, _ := Observe()
 	return p != nil && !p.Recovered() && !p.Aborted()
 }
-
-func ptrPanic() uintptr
-func ptrPanicRecovered(p uintptr) bool
-func ptrPanicAborted(p uintptr) bool
-func ptrPanicLink(p uintptr) uintptr
-func ptrPanicArg(p uintptr) interface{}
