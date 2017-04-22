@@ -32,3 +32,13 @@ TEXT ·ptrPanicLink(SB),NOSPLIT,$0-16
 	MOVQ	_panic_link(CX), BX
 	MOVQ	BX, ret+8(FP)
 	RET
+
+// func ptrPanicArg(uintptr) interface{}
+TEXT ·ptrPanicArg(SB),NOSPLIT,$0-24
+	MOVQ 	p+0(FP), CX
+	MOVQ	_panic_arg(CX), BX
+	MOVQ	BX, ret_type+8(FP)
+	ADDQ	$iface_data, CX
+	MOVQ	_panic_arg(CX), BX
+	MOVQ	BX, ret_data+16(FP)
+	RET

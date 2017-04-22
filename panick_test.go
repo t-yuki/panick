@@ -1,10 +1,32 @@
 package panick_test
 
 import (
+	"runtime"
+	"sync"
 	"testing"
 
 	"github.com/t-yuki/panick"
 )
+
+func TestPanic_Link(t *testing.T) {
+	defer func() {
+		p, _ := panick.Observe()
+		p2 := p.Link()
+		if !p2.Recovered() {
+			t.Fatal("test1 panic should be recovered")
+		}
+		a, ok := p2.Arg().(string)
+		if !ok || a != "test1" {
+			t.Fatal("Arg should catch the arg")
+		}
+		recover()
+	}()
+	defer func() {
+		recover()
+		panic("test2")
+	}()
+	panic("test1")
+}
 
 func TestPanicked_nil(t *testing.T) {
 	defer func() {
@@ -18,7 +40,7 @@ func TestPanicked_nil(t *testing.T) {
 	panic(nil)
 }
 
-func TestPanicked(t *testing.T) {
+func TestPaniced(t *testing.T) {
 	ok := false
 	if panick.Panicked() {
 		t.Fatal("it shouldn't panicked")
@@ -44,4 +66,35 @@ func TestPanicked(t *testing.T) {
 		panic("panic")
 	}()
 	t.Fatal("Panicked shouldn't recover")
+}
+
+func TestPanic_Aborted(t *testing.T) {
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		defer func() {
+			p, _ := panick.Observe()
+			if p.Recovered() {
+				t.Fatal("Goexit shouldn't recover panic")
+			}
+			if !p.Aborted() {
+				t.Fatal("Goexit should aborts panic")
+			}
+			if e := recover(); e != nil {
+				t.Fatal("Goexit should hide panic")
+			}
+		}()
+		defer runtime.Goexit()
+
+		defer func() {
+			p, _ := panick.Observe()
+			if p.Aborted() {
+				t.Fatal("panic shouldn't be aborted")
+			}
+		}()
+
+		panic("test")
+	}()
+	wg.Wait()
 }
