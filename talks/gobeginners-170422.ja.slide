@@ -1,0 +1,100 @@
+Package panick
+github.com/t-yuki/panick
+09:00 23 Apr 2017
+Tags: go, asm, panic
+
+Yukinari Toyota
+
+
+https://github.com/t-yuki/
+@sey
+
+* About Me
+.html me.html
+.link https://github.com/t-yuki github.com/t-yuki
+.image https://avatars3.githubusercontent.com/u/3804806?v=3&s=160
+
+* Package panick
+panicをあれこれするライブラリ
+
+Goでは、panicしているかどうかはrecoverしないとわからない
+
+- でもrecoverすると再度panicしたり (catch-throw)
+- 残念な人がpanic(nil)すると、panicがもみ消されたりする
+
+そこで、runtimeにお伺いして、もっと詳しくみようと思う
+
+ほんとはGoroutine IDの話をしようと思ってたら、いつの間にかもっといいパッケージができてた...
+.link https://docs.google.com/presentation/d/1u7-xdOx2sc_cI1n9jicXCqnc2Brv3fsDk00I6RTREWU Package goid
+
+* panic状態を判定するには
+ふつうはrecoverしてnilかどうかみる
+
+- nilじゃなかったらもっかいpanicして、伝搬する
+- でもpanic(nil)とかすると、panicがもみ消されたりする
+
+.play -edit _recover.go /START OMIT/,/END OMIT/
+  
+ふつうじゃないやつは、runtimeに聞く
+
+* runtimeにpanic状態を聞く
+1. Goroutineオブジェクトを取り出す
+2. panicフィールドがセットされているか調べる
+
+* type g struct (runtime/runtime2.go)
+- runtime内部でGoroutineを表すオブジェクト
+- Goroutine IDや現在の実行状態、panic情報などをもつ
+- Thread Local Storageにポインタが格納されている
+
+.code _struct_g.go /START OMIT/,/END OMIT/
+.link https://golang.org/src/runtime/runtime2.go runtime2.go
+
+* type _panic struct (runtime/runtime2.go)
+runtime内部でpanicを表すオブジェクト
+
+- recovered: panicがrecoverされているか
+- aborted: abortされているか
+
+Goroutineがpanic中だと、type gのpanicフィールドにポインタがセットされる
+
+.code _struct_panic.go /START OMIT/,/END OMIT/
+
+* runtimeにpanic状態を聞く
+1. Goroutineオブジェクトを取り出す = Thread Local Storageからtype g structを取り出す
+2. panicフィールドがセットされているか調べる = type _panic structを調べる
+
+* やってみよう
+.code panick.go
+.play -edit _panick.go /START OMIT/,/END OMIT/
+
+* panick_amd64.s
+ptrPanicの実装はGoアセンブラ。Plan 9の系統をもつ、疑似ニーモニックで記述
+.link https://golang.org/doc/asm doc/asm
+.link http://golang-jp.org/doc/asm 日本語訳
+
+.code panick_amd64.s /START OMIT/,/END OMIT/
+
+go vetで.goと.sの関数宣言が整合性があるか検証してくれる
+
+* Package panick
+Package panickでは、ほかにも以下のような操作を提供
+
+- recoverされているか調べる
+- roceverせずにpanicのargを取り出す
+- panicが連鎖しているときに、祖先のpanicを取り出す
+- panicがGoexitで消されたか調べる
+
+.link https://github.com/t-yuki/panick github.com/t-yuki/panick
+
+* panicのargを取り出す, panicが連鎖しているときに、祖先のpanicを取り出す
+.code ../panick_test.go /TestPanic_Link/,/^}/
+
+* panicがGoexitで消されたか調べる
+.code ../panick_test.go /TestPanic_Aborted/,/^}/
+
+* まとめ
+- panic(nil)は禁止!!!
+- runtimeの中身をかじるとおもしろい
+- アセンブラを使うとruntimeの中身にアクセスできる
+- がんばればSSE命令とかも使える。画像処理に使うと速い。crypto/aesなど、暗号化まわりでも使われてる
+- Goのバージョンかわるとあっさり動かなくなるので、安易な使用はやめよう!

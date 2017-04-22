@@ -74,11 +74,7 @@ func TestPanic_Aborted(t *testing.T) {
 	go func() {
 		defer wg.Done()
 		defer func() {
-			p, _ := panick.Observe()
-			if p.Recovered() {
-				t.Fatal("Goexit shouldn't recover panic")
-			}
-			if !p.Aborted() {
+			if p, _ := panick.Observe(); !p.Aborted() {
 				t.Fatal("Goexit should aborts panic")
 			}
 			if e := recover(); e != nil {
@@ -86,14 +82,12 @@ func TestPanic_Aborted(t *testing.T) {
 			}
 		}()
 		defer runtime.Goexit()
-
 		defer func() {
 			p, _ := panick.Observe()
 			if p.Aborted() {
 				t.Fatal("panic shouldn't be aborted")
 			}
 		}()
-
 		panic("test")
 	}()
 	wg.Wait()
