@@ -76,6 +76,10 @@ ptrPanicの実装はGoアセンブラ。Plan 9の系統をもつ、疑似ニー�
 
 go vetで.goと.sの関数宣言が整合性があるか検証してくれる
 
+* go_asm.h, go_tls.h
+.code go_tls.h /amd64/,/endif/
+.code go_asm.h
+
 * Package panick
 Package panickでは、ほかにも以下のような操作を提供
 
