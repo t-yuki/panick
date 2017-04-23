@@ -92,3 +92,30 @@ func TestPanic_Aborted(t *testing.T) {
 	}()
 	wg.Wait()
 }
+
+func TestObserve_recover_continued(t *testing.T) {
+	func() {
+		defer func() {
+			recover()
+		}()
+		panic("test")
+	}()
+	_, ok := panick.Observe()
+	if ok {
+		t.Fatal("recovered and continued panic shouldn't be detectable")
+	}
+}
+
+func TestObserve_out_of_scope(t *testing.T) {
+	var outerScope *panick.Panic
+	func() {
+		defer func() {
+			outerScope, _ = panick.Observe()
+			t.Logf("%s", outerScope.Arg())
+			recover()
+		}()
+		panic("test")
+	}()
+	runtime.GC()
+	t.Logf("%s", outerScope.Arg())
+}

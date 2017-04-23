@@ -12,7 +12,10 @@ import (
 //go:generate sh gen.sh $GOROOT
 
 type Panic struct {
-	t iface.Panic
+	recovered bool
+	aborted   bool
+	arg       interface{}
+	link      *Panic
 }
 
 func Observe() (*Panic, bool) {
@@ -26,29 +29,38 @@ func Observe() (*Panic, bool) {
 
 	t := get()
 	if t != nil {
-		return &Panic{t: t}, true
+		return walk(t), true
 	}
 	return nil, false
 }
 
+func walk(t iface.Panic) *Panic {
+	if t == nil {
+		return nil
+	}
+	p := &Panic{
+		aborted:   t.Aborted(),
+		recovered: t.Recovered(),
+		arg:       t.Arg(),
+		link:      walk(t.Link()),
+	}
+	return p
+}
+
 func (p Panic) Recovered() bool {
-	return p.t.Recovered()
+	return p.recovered
 }
 
 func (p Panic) Aborted() bool {
-	return p.t.Aborted()
+	return p.aborted
 }
 
 func (p Panic) Arg() interface{} {
-	return p.t.Arg()
+	return p.arg
 }
 
 func (p Panic) Link() *Panic {
-	t := p.t.Link()
-	if t != nil {
-		return &Panic{t: t}
-	}
-	return nil
+	return p.link
 }
 
 func Panicked() bool {

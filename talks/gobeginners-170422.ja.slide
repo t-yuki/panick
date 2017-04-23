@@ -1,5 +1,5 @@
 Package panick
-github.com/t-yuki/panick
+github.com/t-yuki/panick runtimeとpanic、またはアセンブラの話
 09:00 23 Apr 2017
 Tags: go, asm, panic
 
@@ -44,7 +44,7 @@ Goでは、panicしているかどうかはrecoverしないとわからない
 * type g struct (runtime/runtime2.go)
 - runtime内部でGoroutineを表すオブジェクト
 - Goroutine IDや現在の実行状態、panic情報などをもつ
-- Thread Local Storageにポインタが格納されている
+- 取得するには? → Thread Local Storageにポインタが格納されている
 
 .code _struct_g.go /START OMIT/,/END OMIT/
 .link https://golang.org/src/runtime/runtime2.go runtime2.go
@@ -55,13 +55,13 @@ runtime内部でpanicを表すオブジェクト
 - recovered: panicがrecoverされているか
 - aborted: abortされているか
 
-Goroutineがpanic中だと、type gのpanicフィールドにポインタがセットされる
+- Goroutineがpanic中は、type gのpanicフィールドにポインタがセットされる
 
 .code _struct_panic.go /START OMIT/,/END OMIT/
 
 * runtimeにpanic状態を聞く
-1. Goroutineオブジェクトを取り出す = Thread Local Storageからtype g structを取り出す
-2. panicフィールドがセットされているか調べる = type _panic structを調べる
+1. Goroutineオブジェクトを取り出す = Thread Local Storageからg structを取り出す
+2. panicフィールドがセットされているか調べる = g structのpanicフィールドを調べる
 
 * やってみよう
 .code panick.go
@@ -98,6 +98,7 @@ Package panickでは、ほかにも以下のような操作を提供
 
 * まとめ
 - panic(nil)は禁止!!!
+- runtimeに聞くと、recoverされたpanicも検出できる
 - runtimeの中身をかじるとおもしろい
 - アセンブラを使うとruntimeの中身にアクセスできる
 - がんばればSSE命令とかも使える。画像処理に使うと速い。crypto/aesなど、暗号化まわりでも使われてる
