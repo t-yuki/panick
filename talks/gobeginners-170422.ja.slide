@@ -16,6 +16,7 @@ https://github.com/t-yuki/
 .image https://avatars3.githubusercontent.com/u/3804806?v=3&s=160
 
 * Package panick
+.link http://go-talks.appspot.com/github.com/t-yuki/panick/talks/gobeginners-170422.ja.slide#1 This Slide
 panicをあれこれするライブラリ
 
 Goでは、panicしているかどうかはrecoverしないとわからない
