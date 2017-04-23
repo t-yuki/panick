@@ -10,11 +10,13 @@ https://github.com/t-yuki/
 @sey
 
 * About Me
-.html me.html
+.iframe me1.html
+.iframe me2.html
 .link https://github.com/t-yuki github.com/t-yuki
 .image https://avatars3.githubusercontent.com/u/3804806?v=3&s=160
 
 * Package panick
+.link http://go-talks.appspot.com/github.com/t-yuki/panick/talks/gobeginners-170422.ja.slide#1 This Slide
 panicをあれこれするライブラリ
 
 Goでは、panicしているかどうかはrecoverしないとわからない
@@ -103,3 +105,7 @@ Package panickでは、ほかにも以下のような操作を提供
 - アセンブラを使うとruntimeの中身にアクセスできる
 - がんばればSSE命令とかも使える。画像処理に使うと速い。crypto/aesなど、暗号化まわりでも使われてる
 - Goのバージョンかわるとあっさり動かなくなるので、安易な使用はやめよう!
+
+* github.com
+まさかのC判定...!
+.image github.gif
