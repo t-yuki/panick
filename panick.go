@@ -4,6 +4,8 @@ import (
 	"runtime"
 
 	"github.com/t-yuki/panick/internal"
+	_ "github.com/t-yuki/panick/internal/go1.6.4"
+	_ "github.com/t-yuki/panick/internal/go1.7.4"
 	_ "github.com/t-yuki/panick/internal/go1.7.5"
 	_ "github.com/t-yuki/panick/internal/go1.8"
 	_ "github.com/t-yuki/panick/internal/go1.8.1"
